@@ -74,4 +74,73 @@ node main.js
 ```bash
 server start http://localhost:3000/
 ```
-Webブラウザでhttp://localhost:3000/にアクセスしてみて Hello World! が表示されると思います。
+Webブラウザで http://localhost:3000/ にアクセスしてみて **Hello World!** が表示されると思います。
+
+## パーシャルとレイアウトの設定
+ビューの内容を複数のページで共有できるようにするため、最初にアプリケーションのレイアウトを作ります。「レイアウト」を外枠として、その内側にビューをレンダリングします。
+たとえばページのフッターやナビゲーションバーの外枠を変化しない様にレイアウトを作成していきます。
+これらのコンポーネントの為に、いちいちHTMLを作るのではなく代わりに他のビューと共有できる様に`views`ディレクトリに `_layout.pug` ファイルを作成して以下の様に記述します。
+
+```pug
+doctype html
+html(lang="ja")
+  head
+    title= title
+  body
+    include ./partials/_nav.pug
+    block contents
+    include ./partials/_footer.pug
+```
+
+パーシャルもレイアウトと似た動きをします。「パーシャル」とは、他のビューにインクルードする事が可能な、断片的なビューコンテンツのことです。
+ここでは、ページ共通のナビを`_nav.pug` 、フッターを`_footer.pug` として、`views` フォルダーの中に、パーシャル管理様に `partials` と言うフォルダを作り、下記のパーシャルファイルを記述して保存します。
+
+```bash
+mkdir views/partials
+```
+`/views/partials/_nav.pug`
+```pug
+#nav NAVIGATION
+```
+`/views/partials/_nav.pug`
+```pug
+#footer FOOTER
+```
+
+次に、ページ共通部分以外の、固有のHTMLをここでは`main.pug`として記述します。
+```pug
+extends _layout.pug
+
+block contents
+  h1#main= message
+  p= name
+```
+
+URL 経路処理には、`main.js`に下記の経路コードを追記し
+
+`app.get('/main/:name?', homeController.main);`
+
+ホームコントローラには、`homeController.js`下記の処理コードを追記します。
+
+```javascript
+exports.main = (req, res) => {
+	let name = req.params.name;
+	res.render('main', { title: 'Main Page', message: 'Hello Main!', name: name })
+};
+```
+
+そしたら、下記のコマンドを実行してアプリケーション実行してみましょう。
+
+```bash
+node main.js
+```
+```bash
+server start http://localhost:3000/
+```
+今回経路URLを追加した /main/xxx をWebブラウザで http://localhost:3000/main/xxx にアクセスしてみて下記の様に表示されるか確認してみてください。
+```html
+NAVIGATION
+Hello Main!
+xxx
+FOOTER
+```
